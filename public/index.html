@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voice Collector</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>Voice Collector</h1>
+      <p>Devine les doubleurs français à partir de courts extraits audio.</p>
+    </div>
+    <nav>
+      <button id="navPlay" class="nav-button active">Jouer</button>
+      <button id="navCollection" class="nav-button">Ma collection</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="playSection" class="page-section">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Jouer</h2>
+          <div class="status" id="dailyStatus"></div>
+        </div>
+        <div class="card">
+          <div class="audio-area">
+            <button id="loadButton" class="primary-button">Jouer un extrait</button>
+            <div class="audio-player" id="audioContainer">
+              <p>Sélectionnez un extrait pour commencer.</p>
+            </div>
+          </div>
+          <div class="guess-area">
+            <label for="guessInput">Prénom et nom du doubleur</label>
+            <input id="guessInput" type="text" placeholder="Ex: Jean Dupont" autocomplete="off" />
+            <button id="submitGuess" class="primary-button">Valider</button>
+            <div id="feedback" class="feedback"></div>
+          </div>
+        </div>
+      </div>
+      <div class="info-panel">
+        <h3>Instructions</h3>
+        <ul>
+          <li>3 extraits maximum par jour.</li>
+          <li>Réussite = extrait débloqué dans votre collection.</li>
+          <li>Échec = l'extrait est passé et pourra revenir plus tard.</li>
+          <li>Les extraits déjà devinés ne reviennent plus.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="collectionSection" class="page-section hidden">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Ma collection</h2>
+          <p>Vos doubleurs débloqués et leurs extraits.</p>
+        </div>
+        <div id="collectionList" class="collection-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="unlockAnimation" class="unlock-animation hidden">Débloqué !</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
