@@ -11,6 +11,9 @@ const navPlay = document.getElementById('navPlay');
 const navCollection = document.getElementById('navCollection');
 const playSection = document.getElementById('playSection');
 const collectionSection = document.getElementById('collectionSection');
+const successModal = document.getElementById('successModal');
+const successDoubleurName = document.getElementById('successDoubleurName');
+const audioArea = document.querySelector('.audio-area');
 
 let gameState = null;
 let doubleurs = [];
@@ -25,6 +28,32 @@ function normalizeText(text) {
     .trim()
     .toLowerCase();
 }
+
+function createConfetti() {
+  const colors = ['#38bdf8', '#60a5fa', '#3b82f6', '#0ea5e9'];
+  for (let i = 0; i < 50; i++) {
+    const confetti = document.createElement('div');
+    confetti.className = 'confetti';
+    confetti.style.left = Math.random() * 100 + '%';
+    confetti.style.top = '-10px';
+    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.opacity = Math.random() * 0.5 + 0.5;
+    confetti.style.animation = `confettiFall ${1 + Math.random() * 1.5}s ease-in forwards`;
+    document.body.appendChild(confetti);
+    setTimeout(() => confetti.remove(), 2500);
+  }
+}
+
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes confettiFall {
+    to {
+      transform: translateY(100vh) rotate(360deg);
+      opacity: 0;
+    }
+  }
+`;
+document.head.appendChild(style);
 
 function loadState() {
   try {
@@ -80,27 +109,22 @@ function showFeedback(message, type = 'info') {
   if (type === 'error') feedback.classList.add('error');
 }
 
-function showUnlockAnimation() {
-  unlockAnimation.classList.add('show');
-  setTimeout(() => unlockAnimation.classList.remove('show'), 1800);
+function showSuccessModal(doubleurName) {
+  successDoubleurName.textContent = doubleurName;
+  successModal.classList.add('show');
+  createConfetti();
 }
 
-function setAudioPlayer(excerpt) {
-  audioContainer.innerHTML = '';
-  if (!excerpt) {
-    audioContainer.innerHTML = '<p>Sélectionnez un extrait pour commencer.</p>';
-    return;
-  }
+function hideSuccessModal() {
+  successModal.classList.remove('show');
+  currentExcerpt = null;
+  setAudioPlayer(null);
+  guessInput.value = '';
+}
 
-  const audioEl = document.createElement('audio');
-  audioEl.controls = true;
-  audioEl.src = excerpt.url;
-  audioEl.autoplay = true;
-  audioContainer.appendChild(audioEl);
-  const info = document.createElement('p');
-  info.textContent = 'Écoute attentivement, puis entre ta réponse.';
-  info.style.color = '#8b949e';
-  audioContainer.appendChild(info);
+function showCollection() {
+  hideSuccessModal();
+  navCollection.click();
 }
 
 function replayAudioExcerpt(url) {
@@ -111,7 +135,7 @@ function replayAudioExcerpt(url) {
 
   replayAudio = new Audio(url);
   replayAudio.play().catch(() => {
-    showFeedback('Impossible de lire l’extrait. Vérifie ton navigateur.', 'error');
+    showFeedback('Impossible de lire l\'extrait. Vérifie ton navigateur.', 'error');
   });
 }
 
@@ -119,7 +143,7 @@ function buildCollection() {
   collectionList.innerHTML = '';
   const unlockedNames = Object.keys(gameState.unlocked);
   if (unlockedNames.length === 0) {
-    collectionList.innerHTML = '<p>Vous n’avez encore débloqué aucun doubleur. Jouez pour commencer.</p>';
+    collectionList.innerHTML = '<p>Vous n\'avez encore débloqué aucun doubleur. Jouez pour commencer.</p>';
     return;
   }
 
@@ -189,21 +213,42 @@ function getAvailableExcerpt() {
 
 function loadRandomExcerpt() {
   if (gameState.playedCount >= maxDailyPlays) {
-    showFeedback('Tu as atteint la limite de 3 extraits aujourd’hui.', 'error');
+    showFeedback('Tu as atteint la limite de 3 extraits aujourd\'hui.', 'error');
+    audioArea.classList.add('empty');
     return;
   }
 
   const available = getAvailableExcerpt();
   if (available.length === 0) {
-    showFeedback('Aucun extrait restant pour l’instant. Reviens demain ou ajoute des fichiers audio.', 'error');
+    showFeedback('Aucun extrait restant pour l\'instant. Reviens demain ou ajoute des fichiers audio.', 'error');
     currentExcerpt = null;
     setAudioPlayer(null);
+    audioArea.classList.add('empty');
     return;
   }
 
+  audioArea.classList.remove('empty');
   currentExcerpt = available[Math.floor(Math.random() * available.length)];
   setAudioPlayer(currentExcerpt);
-  showFeedback('Écoute l’extrait puis propose le prénom et nom du doubleur.', 'info');
+  showFeedback('Écoute l\'extrait puis propose le prénom et nom du doubleur.', 'info');
+}
+
+function setAudioPlayer(excerpt) {
+  audioContainer.innerHTML = '';
+  if (!excerpt) {
+    audioContainer.innerHTML = '<p>Sélectionnez un extrait pour commencer.</p>';
+    return;
+  }
+
+  const audioEl = document.createElement('audio');
+  audioEl.controls = true;
+  audioEl.src = excerpt.url;
+  audioEl.autoplay = true;
+  audioContainer.appendChild(audioEl);
+  const info = document.createElement('p');
+  info.textContent = 'Écoute attentivement, puis entre ta réponse.';
+  info.style.color = '#8b949e';
+  audioContainer.appendChild(info);
 }
 
 function guessCurrentExcerpt() {
@@ -244,17 +289,14 @@ function guessCurrentExcerpt() {
     saveState();
     buildCollection();
     updateStatus();
-    showFeedback(`Bravo ! ${currentExcerpt.doubleurName} est débloqué dans ta collection.`, 'success');
-    showUnlockAnimation();
-    currentExcerpt = null;
-    setAudioPlayer(null);
+    showSuccessModal(currentExcerpt.doubleurName);
   } else {
     if (!gameState.skippedAudioKeys.includes(currentExcerpt.id)) {
       gameState.skippedAudioKeys.push(currentExcerpt.id);
     }
     saveState();
     updateStatus();
-    showFeedback(`Mauvaise réponse. L’extrait est passé, tu pourras y revenir plus tard.`, 'error');
+    showFeedback(`Mauvaise réponse. L'extrait est passé, tu pourras y revenir plus tard.`, 'error');
     currentExcerpt = null;
     setAudioPlayer(null);
   }

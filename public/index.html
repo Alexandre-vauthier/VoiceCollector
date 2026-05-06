@@ -27,7 +27,7 @@
         </div>
         <div class="card">
           <div class="audio-area">
-            <button id="loadButton" class="primary-button">Jouer un extrait</button>
+            <button id="loadButton" class="primary-button">Deviner un extrait</button>
             <div class="audio-player" id="audioContainer">
               <p>Sélectionnez un extrait pour commencer.</p>
             </div>
@@ -63,6 +63,18 @@
   </main>
 
   <div id="unlockAnimation" class="unlock-animation hidden">Débloqué !</div>
+
+  <div id="successModal" class="success-modal">
+    <div class="modal-content">
+      <h2>Bravo !</h2>
+      <p class="doubleur-name" id="successDoubleurName"></p>
+      <p>Tu as débloqué ce doubleur dans ta collection</p>
+      <div class="modal-buttons">
+        <button class="primary" onclick="hideSuccessModal();">Rejouer</button>
+        <button class="secondary" onclick="showCollection();">Voir ma collection</button>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
