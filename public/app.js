@@ -109,8 +109,15 @@ function showFeedback(message, type = 'info') {
   if (type === 'error') feedback.classList.add('error');
 }
 
-function showSuccessModal(doubleurName) {
+const successTitle = document.getElementById('successTitle');
+const successText = document.getElementById('successText');
+
+function showSuccessModal(doubleurName, isNewDoubleur) {
+  successTitle.textContent = isNewDoubleur ? 'Nouveau doubleur !' : 'Nouvel extrait débloqué !';
   successDoubleurName.textContent = doubleurName;
+  successText.textContent = isNewDoubleur
+    ? `Tu as découvert un nouveau doubleur : ${doubleurName}. Il vient d'être ajouté à ta collection.`
+    : `Tu as débloqué un nouvel extrait de ${doubleurName}. Il est maintenant disponible dans ta collection.`;
   successModal.classList.add('show');
   createConfetti();
 }
@@ -236,7 +243,6 @@ function loadRandomExcerpt() {
 function setAudioPlayer(excerpt) {
   audioContainer.innerHTML = '';
   if (!excerpt) {
-    audioContainer.innerHTML = '<p>Sélectionnez un extrait pour commencer.</p>';
     return;
   }
 
@@ -272,6 +278,7 @@ function guessCurrentExcerpt() {
   gameState.playedCount += 1;
 
   if (isCorrect) {
+    const isNewDoubleur = !gameState.unlocked[currentExcerpt.doubleurName];
     gameState.solvedAudioKeys.push(currentExcerpt.id);
     const unlocked = gameState.unlocked[currentExcerpt.doubleurName] || {
       imageUrl: currentExcerpt.imageUrl,
@@ -289,7 +296,7 @@ function guessCurrentExcerpt() {
     saveState();
     buildCollection();
     updateStatus();
-    showSuccessModal(currentExcerpt.doubleurName);
+    showSuccessModal(currentExcerpt.doubleurName, isNewDoubleur);
   } else {
     if (!gameState.skippedAudioKeys.includes(currentExcerpt.id)) {
       gameState.skippedAudioKeys.push(currentExcerpt.id);
